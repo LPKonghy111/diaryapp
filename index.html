@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>日记本 · 生活记录</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: #e8e0d5;
+    color: #3a3226;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .phone {
+    width: 100%;
+    max-width: 420px;
+    min-height: 100vh;
+    background: #f7f3ec;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 40px rgba(0,0,0,0.1);
+  }
+
+  /* ---------- 通用页面 ---------- */
+  .page {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    padding: 20px 18px 80px;
+    overflow-y: auto;
+  }
+  .page.active { display: flex; }
+
+  .page-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #5a4a3a;
+    margin-bottom: 18px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .page-title .icon { font-size: 24px; }
+
+  /* ---------- 主页 ---------- */
+  .home-header {
+    text-align: center;
+    padding: 30px 0 10px;
+  }
+  .home-header .date {
+    font-size: 14px;
+    color: #9a8a7a;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .home-header .greeting {
+    font-size: 26px;
+    font-weight: 700;
+    color: #5a4a3a;
+    letter-spacing: 2px;
+  }
+  .home-header .sub {
+    font-size: 13px;
+    color: #b0a090;
+    margin-top: 8px;
+  }
+
+  .big-btn {
+    display: block;
+    width: 100%;
+    padding: 28px 20px;
+    border: none;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #7a9e7e, #5a7e5e);
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(90,126,94,0.35);
+    transition: all 0.2s;
+    margin-bottom: 16px;
+    text-align: center;
+    font-family: inherit;
+  }
+  .big-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(90,126,94,0.45); }
+  .big-btn:active { transform: scale(0.98); }
+
+  .small-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .small-btn {
+    flex: 1;
+    padding: 20px 12px;
+    border: 2px solid #d8cec0;
+    border-radius: 18px;
+    background: #fff;
+    color: #6a5a4a;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    font-family: inherit;
+    line-height: 1.4;
+  }
+  .small-btn:hover { border-color: #7a9e7e; background: #f0f7f0; }
+  .small-btn:active { transform: scale(0.97); }
+  .small-btn .icon { font-size: 22px; display: block; margin-bottom: 6px; }
+
+  .recent-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid #e8e0d5;
+    margin-top: 8px;
+  }
+  .recent-card .label {
+    font-size: 12px;
+    color: #b0a090;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .recent-card .preview {
+    font-size: 14px;
+    color: #6a5a4a;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .recent-card .empty {
+    font-size: 13px;
+    color: #c0b0a0;
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  /* ---------- 编辑页（记录今日） ---------- */
+  .editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .editor-header .back-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: #7a9e7e;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-family: inherit;
+  }
+  .editor-header .title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #5a4a3a;
+    letter-spacing: 2px;
+  }
+  .editor-header .save-btn {
+    background: #7a9e7e;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .paper {
+    flex: 1;
+    background: #fffdf8;
+    border-radius: 12px;
+    border: 1px solid #e0d8cc;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    margin-bottom: 12px;
+    min-height: 300px;
+  }
+  .paper::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+      linear-gradient(#f0e8dc 1px, transparent 1px),
+      linear-gradient(90deg, #f0e8dc 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  .paper-inner {
+    position: relative;
+    z-index: 2;
+    padding: 20px 18px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .paper-textarea {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    line-height: 28px;
+    color: #3a3226;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    min-height: 200px;
+  }
+  .paper-textarea::placeholder { color: #c0b0a0; }
+  .paper-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .paper-images img {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 8px;
+    border: 1px solid #e0d8cc;
+    object-fit: cover;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    margin-bottom: 10px;
+  }
+  .draw-canvas {
+    width: 100%;
+    height: 180px;
+    background: #fffdf8;
+    border-radius: 12px;
+    border: 1px solid #e0d8cc;
+    touch-action: none;
+    display: block;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .tool-btn {
+    flex: 1;
+    min-width: 60px;
+    padding: 10px 6px;
+    border: 1.5px solid #d8cec0;
+    border-radius: 12px;
+    background: #fff;
+    color: #6a5a4a;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .tool-btn:hover { border-color: #7a9e7e; background: #f0f7f0; }
+  .tool-btn.active { background: #7a9e7e; color: #fff; border-color: #7a9e7e; }
+
+  .color-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .color-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .color-dot.active { border-color: #5a4a3a; transform: scale(1.15); }
+
+  .size-slider {
+    flex: 1;
+    min-width: 80px;
+    accent-color: #7a9e7e;
+  }
+
+  /* ---------- 查看昨日 ---------- */
+  .yesterday-paper {
+    background: #fffdf8;
+    border-radius: 12px;
+    border: 1px solid #e0d8cc;
+    padding: 20px 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    position: relative;
+    min-height: 300px;
+    background-image: 
+      linear-gradient(#f0e8dc 1px, transparent 1px),
+      linear-gradient(90deg, #f0e8dc 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-position: -1px -1px;
+  }
+  .yesterday-paper .content {
+    font-size: 16px;
+    line-height: 28px;
+    color: #3a3226;
+    white-space: pre-wrap;
+    word-break: break-word;
+    position: relative;
+    z-index: 2;
+  }
+  .yesterday-paper .content img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin: 8px 0;
+  }
+  .yesterday-empty {
+    text-align: center;
+    color: #c0b0a0;
+    font-size: 15px;
+    padding: 80px 20px;
+  }
+
+  .flip-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+  }
+  .flip-btn {
+    padding: 10px 20px;
+    border: 1.5px solid #d8cec0;
+    border-radius: 12px;
+    background: #fff;
+    color: #6a5a4a;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .flip-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .flip-info {
+    font-size: 13px;
+    color: #9a8a7a;
+  }
+
+  .lock-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255,253,248,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  .lock-overlay .lock-msg {
+    background: #5a4a3a;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.6;
+    max-width: 80%;
+  }
+
+  /* ---------- 未来计划 ---------- */
+  .plan-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .plan-input {
+    flex: 1;
+    padding: 14px 16px;
+    border: 1.5px solid #d8cec0;
+    border-radius: 14px;
+    font-size: 15px;
+    outline: none;
+    font-family: inherit;
+    background: #fff;
+    color: #3a3226;
+  }
+  .plan-input:focus { border-color: #7a9e7e; }
+  .plan-date {
+    padding: 14px 8px;
+    border: 1.5px solid #d8cec0;
+    border-radius: 14px;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+    background: #fff;
+    color: #3a3226;
+    width: 110px;
+  }
+  .plan-add-btn {
+    padding: 14px 18px;
+    background: #7a9e7e;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .plan-list { display: flex; flex-direction: column; gap: 10px; }
+  .plan-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1px solid #e8e0d5;
+    transition: all 0.2s;
+  }
+  .plan-item.done { opacity: 0.5; }
+  .plan-item.done .plan-text { text-decoration: line-through; }
+  .plan-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #d8cec0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    font-size: 14px;
+    color: transparent;
+  }
+  .plan-check.checked { background: #7a9e7e; border-color: #7a9e7e; color: #fff; }
+  .plan-text { flex: 1; font-size: 15px; color: #3a3226; line-height: 1.4; }
+  .plan-date-tag {
+    font-size: 11px;
+    color: #b0a090;
+    background: #f0ece4;
+    padding: 3px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .plan-del {
+    background: none;
+    border: none;
+    color: #c0b0a0;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+    font-family: inherit;
+  }
+  .plan-del:hover { color: #d87a7a; }
+
+  .plan-section-label {
+    font-size: 13px;
+    color: #9a8a7a;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin: 16px 0 8px;
+  }
+
+  /* ---------- 我的 ---------- */
+  .profile-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #a8c8a8, #7a9e7e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: #fff;
+    margin: 10px auto 14px;
+    cursor: pointer;
+    overflow: hidden;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    position: relative;
+  }
+  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-avatar .edit-hint {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.4);
+    color: #fff;
+    font-size: 11px;
+    text-align: center;
+    padding: 4px;
+  }
+
+  .profile-name {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: #5a4a3a;
+    margin-bottom: 6px;
+  }
+  .profile-name-input {
+    display: block;
+    width: 80%;
+    margin: 0 auto 14px;
+    padding: 10px 16px;
+    border: 1.5px solid #d8cec0;
+    border-radius: 12px;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+    font-family: inherit;
+    background: #fff;
+    color: #3a3226;
+  }
+  .profile-name-input:focus { border-color: #7a9e7e; }
+
+  .profile-section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid #e8e0d5;
+    margin-bottom: 14px;
+  }
+  .profile-section .sec-title {
+    font-size: 13px;
+    color: #9a8a7a;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .profile-stat {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+  }
+  .profile-stat .stat-item .num {
+    font-size: 22px;
+    font-weight: 700;
+    color: #7a9e7e;
+  }
+  .profile-stat .stat-item .lbl {
+    font-size: 12px;
+    color: #b0a090;
+    margin-top: 2px;
+  }
+
+  .export-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    background: #7a9e7e;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .export-btn:hover { background: #6a8e6e; }
+
+  /* ---------- 底部导航 ---------- */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border-top: 1px solid #e8e0d5;
+    display: flex;
+    z-index: 100;
+    padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+  }
+  .nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 6px 0;
+    cursor: pointer;
+    color: #b0a090;
+    font-size: 11px;
+    transition: all 0.2s;
+    font-family: inherit;
+    background: none;
+    border: none;
+  }
+  .nav-item .nav-icon { font-size: 22px; display: block; margin-bottom: 2px; }
+  .nav-item.active { color: #7a9e7e; }
+  .nav-item:hover { color: #7a9e7e; }
+
+  /* ---------- 提示 ---------- */
+  .toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(58,50,38,0.9);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    text-align: center;
+    max-width: 80%;
+    line-height: 1.5;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ---------- 导出预览 ---------- */
+  .export-preview {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .export-preview.show { display: flex; }
+  .export-preview img {
+    max-width: 90%;
+    max-height: 70vh;
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  .export-preview .close-btn {
+    margin-top: 20px;
+    padding: 12px 32px;
+    background: #fff;
+    color: #3a3226;
+    border: none;
+    border-radius: 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .hidden { display: none !important; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d8cec0; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- ========== 主页 ========== -->
+  <div class="page active" id="page-home">
+    <div class="home-header">
+      <div class="date" id="homeDate"></div>
+      <div class="greeting" id="homeGreeting">你好呀</div>
+      <div class="sub">记录每一天的小美好</div>
+    </div>
+
+    <button class="big-btn" id="btnRecord">✏️ 记录今日</button>
+
+    <div class="small-row">
+      <button class="small-btn" id="btnYesterday"><span class="icon">📖</span>查看昨日</button>
+      <button class="small-btn" id="btnPlan"><span class="icon">📋</span>未来计划</button>
+    </div>
+
+    <div class="recent-card" id="recentCard">
+      <div class="label">最近记录</div>
+      <div class="preview" id="recentPreview">还没有记录哦～</div>
+    </div>
+  </div>
+
+  <!-- ========== 记录今日 ========== -->
+  <div class="page" id="page-editor">
+    <div class="editor-header">
+      <button class="back-btn" id="editorBack">←</button>
+      <div class="title" id="editorTitle">记录今日</div>
+      <button class="save-btn" id="editorSave">保存</button>
+    </div>
+
+    <div class="paper">
+      <div class="paper-inner">
+        <textarea class="paper-textarea" id="editorText" placeholder="今天发生了什么？写下你的心情吧..."></textarea>
+        <div class="paper-images" id="editorImages"></div>
+      </div>
+    </div>
+
+    <!-- 今日待办（从未来计划自动导入） -->
+    <div id="todayTasks" class="hidden" style="margin-bottom:10px;">
+      <div style="font-size:13px;color:#9a8a7a;font-weight:600;letter-spacing:1px;margin-bottom:8px;">📌 今日待办</div>
+      <div id="todayTaskList" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas class="draw-canvas" id="drawCanvas"></canvas>
+    </div>
+
+    <div class="toolbar">
+      <button class="tool-btn active" data-tool="pen">✏️ 画笔</button>
+      <button class="tool-btn" data-tool="eraser">🧹 橡皮</button>
+      <button class="tool-btn" id="btnClearCanvas">🗑️ 清空</button>
+      <button class="tool-btn" id="btnImportImg">🖼️ 图片</button>
+    </div>
+
+    <div class="color-row">
+      <div class="color-dot active" style="background:#3a3226;" data-color="#3a3226"></div>
+      <div class="color-dot" style="background:#d87a7a;" data-color="#d87a7a"></div>
+      <div class="color-dot" style="background:#7a9e7e;" data-color="#7a9e7e"></div>
+      <div class="color-dot" style="background:#7a8ed8;" data-color="#7a8ed8"></div>
+      <div class="color-dot" style="background:#d8b87a;" data-color="#d8b87a"></div>
+      <div class="color-dot" style="background:#9a7ad8;" data-color="#9a7ad8"></div>
+      <input type="range" class="size-slider" id="sizeSlider" min="1" max="12" value="3">
+    </div>
+
+    <input type="file" id="fileInput" accept="image/*" style="display:none;">
+  </div>
+
+  <!-- ========== 查看昨日 ========== -->
+  <div class="page" id="page-yesterday">
+    <div class="editor-header">
+      <button class="back-btn" id="yesterdayBack">←</button>
+      <div class="title">查看昨日</div>
+      <div style="width:60px;"></div>
+    </div>
+
+    <div class="yesterday-paper" id="yesterdayPaper">
+      <div class="content" id="yesterdayContent"></div>
+      <div class="lock-overlay" id="lockOverlay">
+        <div class="lock-msg">昨天已经过去了，请多多关注今天吧 🌱</div>
+      </div>
+    </div>
+
+    <div class="flip-nav">
+      <button class="flip-btn" id="flipPrev" disabled>← 前一天</button>
+      <span class="flip-info" id="flipInfo">1 / 1</span>
+      <button class="flip-btn" id="flipNext" disabled>后一天 →</button>
+    </div>
+  </div>
+
+  <!-- ========== 未来计划 ========== -->
+  <div class="page" id="page-plan">
+    <div class="editor-header">
+      <button class="back-btn" id="planBack">←</button>
+      <div class="title">未来计划</div>
+      <div style="width:60px;"></div>
+    </div>
+
+    <div class="plan-input-row">
+      <input type="text" class="plan-input" id="planInput" placeholder="添加一个计划...">
+      <input type="date" class="plan-date" id="planDate">
+      <button class="plan-add-btn" id="planAdd">+</button>
+    </div>
+
+    <div class="plan-section-label">📋 待完成</div>
+    <div class="plan-list" id="planListActive"></div>
+
+    <div class="plan-section-label">✅ 已完成</div>
+    <div class="plan-list" id="planListDone"></div>
+  </div>
+
+  <!-- ========== 我的 ========== -->
+  <div class="page" id="page-profile">
+    <div class="page-title"><span class="icon">👤</span>我的</div>
+
+    <div class="profile-avatar" id="avatarPreview">
+      <span id="avatarEmoji">🌸</span>
+      <div class="edit-hint">点击更换</div>
+    </div>
+    <input type="file" id="avatarFile" accept="image/*" style="display:none;">
+
+    <input type="text" class="profile-name-input" id="nameInput" placeholder="给自己起个昵称吧" maxlength="12">
+
+    <div class="profile-section">
+      <div class="sec-title">📊 我的记录</div>
+      <div class="profile-stat">
+        <div class="stat-item">
+          <div class="num" id="statDays">0</div>
+          <div class="lbl">记录天数</div>
+        </div>
+        <div class="stat-item">
+          <div class="num" id="statPlans">0</div>
+          <div class="lbl">计划完成</div>
+        </div>
+        <div class="stat-item">
+          <div class="num" id="statWords">0</div>
+          <div class="lbl">总字数</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="export-btn" id="btnExportToday">📤 导出今日日记图片</button>
+    <button class="export-btn" id="btnExportYesterday">📤 导出昨日日记图片</button>
+
+    <div style="font-size:12px;color:#c0b0a0;text-align:center;margin-top:20px;">
+      日记本 · 生活记录 v1.0
+    </div>
+  </div>
+
+  <!-- ========== 底部导航 ========== -->
+  <div class="bottom-nav">
+    <button class="nav-item active" data-page="home">
+      <span class="nav-icon">🏠</span>主页
+    </button>
+    <button class="nav-item" data-page="profile">
+      <span class="nav-icon">👤</span>我的
+    </button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 导出预览 -->
+<div class="export-preview" id="exportPreview">
+  <img id="exportImg" src="" alt="导出预览">
+  <button class="close-btn" id="exportClose">关闭</button>
+</div>
+
+<script>
+// ==================== 数据存储 ====================
+var STORE_KEY = 'diary_app_data';
+
+function loadData() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {
+    diaries: {},       // { '2026-09-29': { text: '', images: [], drawing: '' } }
+    plans: [],         // [{ id, text, date, done }]
+    profile: { name: '', avatar: '' },
+    nicknameTaken: {}  // 模拟已占用昵称
+  };
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  } catch(e) {
+    toast('存储空间不足，请清理一些旧记录');
+  }
+}
+
+var data = loadData();
+
+// ==================== 工具函数 ====================
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function dateStr(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function dateCN(str) {
+  if (!str) return '';
+  var parts = str.split('-');
+  return parseInt(parts[1]) + '月' + parseInt(parts[2]) + '日';
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+function toast(msg) { showToast(msg); }
+
+// ==================== 页面切换 ====================
+var pages = {
+  home: document.getElementById('page-home'),
+  editor: document.getElementById('page-editor'),
+  yesterday: document.getElementById('page-yesterday'),
+  plan: document.getElementById('page-plan'),
+  profile: document.getElementById('page-profile')
+};
+
+function goPage(name) {
+  Object.keys(pages).forEach(function(k) {
+    pages[k].classList.toggle('active', k === name);
+  });
+  // 底部导航高亮
+  document.querySelectorAll('.nav-item').forEach(function(n) {
+    n.classList.toggle('active', n.dataset.page === name);
+  });
+  // 滚动到顶部
+  if (pages[name]) pages[name].scrollTop = 0;
+}
+
+// 底部导航
+document.querySelectorAll('.nav-item').forEach(function(n) {
+  n.addEventListener('click', function() {
+    goPage(this.dataset.page);
+    if (this.dataset.page === 'home') refreshHome();
+    if (this.dataset.page === 'profile') refreshProfile();
+  });
+});
+
+// ==================== 主页 ====================
+function refreshHome() {
+  var now = new Date();
+  var weekdays = ['日','一','二','三','四','五','六'];
+  document.getElementById('homeDate').textContent = 
+    now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日 星期' + weekdays[now.getDay()];
+  
+  var h = now.getHours();
+  var greet = '你好呀';
+  if (h < 6) greet = '夜深了';
+  else if (h < 9) greet = '早上好';
+  else if (h < 12) greet = '上午好';
+  else if (h < 14) greet = '中午好';
+  else if (h < 18) greet = '下午好';
+  else greet = '晚上好';
+  
+  var name = data.profile.name || '';
+  document.getElementById('homeGreeting').textContent = name ? greet + '，' + name : greet;
+
+  // 最近记录
+  var dates = Object.keys(data.diaries).sort().reverse();
+  var preview = document.getElementById('recentPreview');
+  if (dates.length === 0) {
+    preview.textContent = '还没有记录哦～';
+    preview.className = 'empty';
+  } else {
+    var latest = dates[0];
+    var d = data.diaries[latest];
+    var text = d.text || '';
+    if (text.length > 60) text = text.slice(0, 60) + '...';
+    preview.textContent = dateCN(latest) + '：' + (text || '（图片记录）');
+    preview.className = 'preview';
+  }
+}
+
+document.getElementById('btnRecord').addEventListener('click', function() {
+  openEditor(todayStr());
+});
+
+document.getElementById('btnYesterday').addEventListener('click', function() {
+  goPage('yesterday');
+  renderYesterday();
+});
+
+document.getElementById
