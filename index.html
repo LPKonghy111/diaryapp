@@ -2,967 +2,276 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>日记本 · 生活记录</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>日记本</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    background: #e8e0d5;
-    color: #3a3226;
-    display: flex;
-    justify-content: center;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  .phone {
-    width: 100%;
-    max-width: 420px;
-    min-height: 100vh;
-    background: #f7f3ec;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 0 40px rgba(0,0,0,0.1);
-  }
-
-  /* ---------- 通用页面 ---------- */
-  .page {
-    flex: 1;
-    display: none;
-    flex-direction: column;
-    padding: 20px 18px 80px;
-    overflow-y: auto;
-  }
-  .page.active { display: flex; }
-
-  .page-title {
-    font-size: 22px;
-    font-weight: 700;
-    color: #5a4a3a;
-    margin-bottom: 18px;
-    letter-spacing: 2px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .page-title .icon { font-size: 24px; }
-
-  /* ---------- 主页 ---------- */
-  .home-header {
-    text-align: center;
-    padding: 30px 0 10px;
-  }
-  .home-header .date {
-    font-size: 14px;
-    color: #9a8a7a;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-  }
-  .home-header .greeting {
-    font-size: 26px;
-    font-weight: 700;
-    color: #5a4a3a;
-    letter-spacing: 2px;
-  }
-  .home-header .sub {
-    font-size: 13px;
-    color: #b0a090;
-    margin-top: 8px;
-  }
-
-  .big-btn {
-    display: block;
-    width: 100%;
-    padding: 28px 20px;
-    border: none;
-    border-radius: 24px;
-    background: linear-gradient(135deg, #7a9e7e, #5a7e5e);
-    color: #fff;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(90,126,94,0.35);
-    transition: all 0.2s;
-    margin-bottom: 16px;
-    text-align: center;
-    font-family: inherit;
-  }
-  .big-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(90,126,94,0.45); }
-  .big-btn:active { transform: scale(0.98); }
-
-  .small-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .small-btn {
-    flex: 1;
-    padding: 20px 12px;
-    border: 2px solid #d8cec0;
-    border-radius: 18px;
-    background: #fff;
-    color: #6a5a4a;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-    font-family: inherit;
-    line-height: 1.4;
-  }
-  .small-btn:hover { border-color: #7a9e7e; background: #f0f7f0; }
-  .small-btn:active { transform: scale(0.97); }
-  .small-btn .icon { font-size: 22px; display: block; margin-bottom: 6px; }
-
-  .recent-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 16px;
-    border: 1px solid #e8e0d5;
-    margin-top: 8px;
-  }
-  .recent-card .label {
-    font-size: 12px;
-    color: #b0a090;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-  }
-  .recent-card .preview {
-    font-size: 14px;
-    color: #6a5a4a;
-    line-height: 1.6;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .recent-card .empty {
-    font-size: 13px;
-    color: #c0b0a0;
-    text-align: center;
-    padding: 10px 0;
-  }
-
-  /* ---------- 编辑页（记录今日） ---------- */
-  .editor-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
-  }
-  .editor-header .back-btn {
-    background: none;
-    border: none;
-    font-size: 22px;
-    color: #7a9e7e;
-    cursor: pointer;
-    padding: 4px 8px;
-    font-family: inherit;
-  }
-  .editor-header .title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #5a4a3a;
-    letter-spacing: 2px;
-  }
-  .editor-header .save-btn {
-    background: #7a9e7e;
-    color: #fff;
-    border: none;
-    border-radius: 20px;
-    padding: 8px 18px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-  }
-
-  .paper {
-    flex: 1;
-    background: #fffdf8;
-    border-radius: 12px;
-    border: 1px solid #e0d8cc;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-    margin-bottom: 12px;
-    min-height: 300px;
-  }
-  .paper::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-image: 
-      linear-gradient(#f0e8dc 1px, transparent 1px),
-      linear-gradient(90deg, #f0e8dc 1px, transparent 1px);
-    background-size: 28px 28px;
-    pointer-events: none;
-    opacity: 0.5;
-  }
-  .paper-inner {
-    position: relative;
-    z-index: 2;
-    padding: 20px 18px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  .paper-textarea {
-    flex: 1;
-    width: 100%;
-    border: none;
-    background: transparent;
-    font-size: 16px;
-    line-height: 28px;
-    color: #3a3226;
-    resize: none;
-    outline: none;
-    font-family: inherit;
-    min-height: 200px;
-  }
-  .paper-textarea::placeholder { color: #c0b0a0; }
-  .paper-images {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .paper-images img {
-    max-width: 100px;
-    max-height: 100px;
-    border-radius: 8px;
-    border: 1px solid #e0d8cc;
-    object-fit: cover;
-  }
-
-  .canvas-wrap {
-    position: relative;
-    margin-bottom: 10px;
-  }
-  .draw-canvas {
-    width: 100%;
-    height: 180px;
-    background: #fffdf8;
-    border-radius: 12px;
-    border: 1px solid #e0d8cc;
-    touch-action: none;
-    display: block;
-  }
-
-  .toolbar {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-  }
-  .tool-btn {
-    flex: 1;
-    min-width: 60px;
-    padding: 10px 6px;
-    border: 1.5px solid #d8cec0;
-    border-radius: 12px;
-    background: #fff;
-    color: #6a5a4a;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.2s;
-    text-align: center;
-  }
-  .tool-btn:hover { border-color: #7a9e7e; background: #f0f7f0; }
-  .tool-btn.active { background: #7a9e7e; color: #fff; border-color: #7a9e7e; }
-
-  .color-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .color-dot {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-  .color-dot.active { border-color: #5a4a3a; transform: scale(1.15); }
-
-  .size-slider {
-    flex: 1;
-    min-width: 80px;
-    accent-color: #7a9e7e;
-  }
-
-  /* ---------- 查看昨日 ---------- */
-  .yesterday-paper {
-    background: #fffdf8;
-    border-radius: 12px;
-    border: 1px solid #e0d8cc;
-    padding: 20px 18px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-    position: relative;
-    min-height: 300px;
-    background-image: 
-      linear-gradient(#f0e8dc 1px, transparent 1px),
-      linear-gradient(90deg, #f0e8dc 1px, transparent 1px);
-    background-size: 28px 28px;
-    background-position: -1px -1px;
-  }
-  .yesterday-paper .content {
-    font-size: 16px;
-    line-height: 28px;
-    color: #3a3226;
-    white-space: pre-wrap;
-    word-break: break-word;
-    position: relative;
-    z-index: 2;
-  }
-  .yesterday-paper .content img {
-    max-width: 100%;
-    border-radius: 8px;
-    margin: 8px 0;
-  }
-  .yesterday-empty {
-    text-align: center;
-    color: #c0b0a0;
-    font-size: 15px;
-    padding: 80px 20px;
-  }
-
-  .flip-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 14px;
-  }
-  .flip-btn {
-    padding: 10px 20px;
-    border: 1.5px solid #d8cec0;
-    border-radius: 12px;
-    background: #fff;
-    color: #6a5a4a;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  .flip-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .flip-info {
-    font-size: 13px;
-    color: #9a8a7a;
-  }
-
-  .lock-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(255,253,248,0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    border-radius: 12px;
-    cursor: pointer;
-  }
-  .lock-overlay .lock-msg {
-    background: #5a4a3a;
-    color: #fff;
-    padding: 12px 24px;
-    border-radius: 24px;
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.6;
-    max-width: 80%;
-  }
-
-  /* ---------- 未来计划 ---------- */
-  .plan-input-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-  .plan-input {
-    flex: 1;
-    padding: 14px 16px;
-    border: 1.5px solid #d8cec0;
-    border-radius: 14px;
-    font-size: 15px;
-    outline: none;
-    font-family: inherit;
-    background: #fff;
-    color: #3a3226;
-  }
-  .plan-input:focus { border-color: #7a9e7e; }
-  .plan-date {
-    padding: 14px 8px;
-    border: 1.5px solid #d8cec0;
-    border-radius: 14px;
-    font-size: 13px;
-    outline: none;
-    font-family: inherit;
-    background: #fff;
-    color: #3a3226;
-    width: 110px;
-  }
-  .plan-add-btn {
-    padding: 14px 18px;
-    background: #7a9e7e;
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-  }
-
-  .plan-list { display: flex; flex-direction: column; gap: 10px; }
-  .plan-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #fff;
-    border-radius: 14px;
-    padding: 14px 16px;
-    border: 1px solid #e8e0d5;
-    transition: all 0.2s;
-  }
-  .plan-item.done { opacity: 0.5; }
-  .plan-item.done .plan-text { text-decoration: line-through; }
-  .plan-check {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 2px solid #d8cec0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: all 0.2s;
-    font-size: 14px;
-    color: transparent;
-  }
-  .plan-check.checked { background: #7a9e7e; border-color: #7a9e7e; color: #fff; }
-  .plan-text { flex: 1; font-size: 15px; color: #3a3226; line-height: 1.4; }
-  .plan-date-tag {
-    font-size: 11px;
-    color: #b0a090;
-    background: #f0ece4;
-    padding: 3px 8px;
-    border-radius: 8px;
-    white-space: nowrap;
-  }
-  .plan-del {
-    background: none;
-    border: none;
-    color: #c0b0a0;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px;
-    font-family: inherit;
-  }
-  .plan-del:hover { color: #d87a7a; }
-
-  .plan-section-label {
-    font-size: 13px;
-    color: #9a8a7a;
-    font-weight: 600;
-    letter-spacing: 1px;
-    margin: 16px 0 8px;
-  }
-
-  /* ---------- 我的 ---------- */
-  .profile-avatar {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #a8c8a8, #7a9e7e);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 36px;
-    color: #fff;
-    margin: 10px auto 14px;
-    cursor: pointer;
-    overflow: hidden;
-    border: 3px solid #fff;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    position: relative;
-  }
-  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .profile-avatar .edit-hint {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0,0,0,0.4);
-    color: #fff;
-    font-size: 11px;
-    text-align: center;
-    padding: 4px;
-  }
-
-  .profile-name {
-    text-align: center;
-    font-size: 20px;
-    font-weight: 700;
-    color: #5a4a3a;
-    margin-bottom: 6px;
-  }
-  .profile-name-input {
-    display: block;
-    width: 80%;
-    margin: 0 auto 14px;
-    padding: 10px 16px;
-    border: 1.5px solid #d8cec0;
-    border-radius: 12px;
-    font-size: 16px;
-    text-align: center;
-    outline: none;
-    font-family: inherit;
-    background: #fff;
-    color: #3a3226;
-  }
-  .profile-name-input:focus { border-color: #7a9e7e; }
-
-  .profile-section {
-    background: #fff;
-    border-radius: 16px;
-    padding: 16px;
-    border: 1px solid #e8e0d5;
-    margin-bottom: 14px;
-  }
-  .profile-section .sec-title {
-    font-size: 13px;
-    color: #9a8a7a;
-    font-weight: 600;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-  }
-  .profile-stat {
-    display: flex;
-    justify-content: space-around;
-    text-align: center;
-  }
-  .profile-stat .stat-item .num {
-    font-size: 22px;
-    font-weight: 700;
-    color: #7a9e7e;
-  }
-  .profile-stat .stat-item .lbl {
-    font-size: 12px;
-    color: #b0a090;
-    margin-top: 2px;
-  }
-
-  .export-btn {
-    display: block;
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 16px;
-    background: #7a9e7e;
-    color: #fff;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    margin-bottom: 10px;
-    letter-spacing: 1px;
-  }
-  .export-btn:hover { background: #6a8e6e; }
-
-  /* ---------- 底部导航 ---------- */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 420px;
-    background: #fff;
-    border-top: 1px solid #e8e0d5;
-    display: flex;
-    z-index: 100;
-    padding: 6px 0 max(6px, env(safe-area-inset-bottom));
-  }
-  .nav-item {
-    flex: 1;
-    text-align: center;
-    padding: 6px 0;
-    cursor: pointer;
-    color: #b0a090;
-    font-size: 11px;
-    transition: all 0.2s;
-    font-family: inherit;
-    background: none;
-    border: none;
-  }
-  .nav-item .nav-icon { font-size: 22px; display: block; margin-bottom: 2px; }
-  .nav-item.active { color: #7a9e7e; }
-  .nav-item:hover { color: #7a9e7e; }
-
-  /* ---------- 提示 ---------- */
-  .toast {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(58,50,38,0.9);
-    color: #fff;
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-size: 14px;
-    z-index: 999;
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-    text-align: center;
-    max-width: 80%;
-    line-height: 1.5;
-  }
-  .toast.show { opacity: 1; }
-
-  /* ---------- 导出预览 ---------- */
-  .export-preview {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 1000;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .export-preview.show { display: flex; }
-  .export-preview img {
-    max-width: 90%;
-    max-height: 70vh;
-    border-radius: 12px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-  }
-  .export-preview .close-btn {
-    margin-top: 20px;
-    padding: 12px 32px;
-    background: #fff;
-    color: #3a3226;
-    border: none;
-    border-radius: 24px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-  }
-
-  .hidden { display: none !important; }
-
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #d8cec0; border-radius: 4px; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#e8e0d5;color:#3a3226;display:flex;justify-content:center;min-height:100vh}
+.phone{width:100%;max-width:420px;min-height:100vh;background:#f7f3ec;display:flex;flex-direction:column;position:relative;box-shadow:0 0 40px rgba(0,0,0,.1)}
+.page{flex:1;display:none;flex-direction:column;padding:20px 18px 80px;overflow-y:auto}
+.page.active{display:flex}
+.page-title{font-size:22px;font-weight:700;color:#5a4a3a;margin-bottom:18px;letter-spacing:2px}
+.home-header{text-align:center;padding:30px 0 10px}
+.home-header .date{font-size:14px;color:#9a8a7a;margin-bottom:6px}
+.home-header .greeting{font-size:26px;font-weight:700;color:#5a4a3a;letter-spacing:2px}
+.home-header .sub{font-size:13px;color:#b0a090;margin-top:8px}
+.big-btn{display:block;width:100%;padding:28px 20px;border:none;border-radius:24px;background:linear-gradient(135deg,#7a9e7e,#5a7e5e);color:#fff;font-size:22px;font-weight:700;letter-spacing:4px;cursor:pointer;box-shadow:0 8px 24px rgba(90,126,94,.35);margin-bottom:16px;font-family:inherit}
+.big-btn:active{transform:scale(.98)}
+.small-row{display:flex;gap:12px;margin-bottom:20px}
+.small-btn{flex:1;padding:20px 12px;border:2px solid #d8cec0;border-radius:18px;background:#fff;color:#6a5a4a;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;line-height:1.4;text-align:center}
+.small-btn .icon{font-size:22px;display:block;margin-bottom:6px}
+.small-btn:active{transform:scale(.97)}
+.recent-card{background:#fff;border-radius:16px;padding:16px;border:1px solid #e8e0d5}
+.recent-card .label{font-size:12px;color:#b0a090;margin-bottom:6px}
+.recent-card .preview{font-size:14px;color:#6a5a4a;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.editor-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.editor-header .back-btn{background:none;border:none;font-size:22px;color:#7a9e7e;cursor:pointer;padding:4px 8px;font-family:inherit}
+.editor-header .title{font-size:18px;font-weight:700;color:#5a4a3a;letter-spacing:2px}
+.editor-header .save-btn{background:#7a9e7e;color:#fff;border:none;border-radius:20px;padding:8px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.paper{flex:1;background:#fffdf8;border-radius:12px;border:1px solid #e0d8cc;position:relative;overflow:hidden;margin-bottom:12px;min-height:280px;background-image:linear-gradient(#f0e8dc 1px,transparent 1px),linear-gradient(90deg,#f0e8dc 1px,transparent 1px);background-size:28px 28px;background-position:-1px -1px}
+.paper-inner{position:relative;z-index:2;padding:20px 18px;height:100%;display:flex;flex-direction:column}
+.paper-textarea{flex:1;width:100%;border:none;background:transparent;font-size:16px;line-height:28px;color:#3a3226;resize:none;outline:none;font-family:inherit;min-height:200px}
+.paper-textarea::placeholder{color:#c0b0a0}
+.paper-images{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.paper-images img{max-width:100px;max-height:100px;border-radius:8px;border:1px solid #e0d8cc;object-fit:cover}
+.canvas-wrap{margin-bottom:10px}
+.draw-canvas{width:100%;height:180px;background:#fffdf8;border-radius:12px;border:1px solid #e0d8cc;touch-action:none;display:block}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.tool-btn{flex:1;min-width:60px;padding:10px 6px;border:1.5px solid #d8cec0;border-radius:12px;background:#fff;color:#6a5a4a;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center}
+.tool-btn.active{background:#7a9e7e;color:#fff;border-color:#7a9e7e}
+.color-row{display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap}
+.color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;flex-shrink:0}
+.color-dot.active{border-color:#5a4a3a;transform:scale(1.15)}
+.size-slider{flex:1;min-width:80px;accent-color:#7a9e7e}
+.yesterday-paper{background:#fffdf8;border-radius:12px;border:1px solid #e0d8cc;padding:20px 18px;position:relative;min-height:300px;background-image:linear-gradient(#f0e8dc 1px,transparent 1px),linear-gradient(90deg,#f0e8dc 1px,transparent 1px);background-size:28px 28px;background-position:-1px -1px}
+.yesterday-paper .content{font-size:16px;line-height:28px;color:#3a3226;white-space:pre-wrap;word-break:break-word;position:relative;z-index:2}
+.yesterday-paper .content img{max-width:100%;border-radius:8px;margin:8px 0}
+.yesterday-empty{text-align:center;color:#c0b0a0;font-size:15px;padding:80px 20px}
+.lock-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,253,248,.6);display:flex;align-items:center;justify-content:center;z-index:10;border-radius:12px;cursor:pointer}
+.lock-overlay .lock-msg{background:#5a4a3a;color:#fff;padding:12px 24px;border-radius:24px;font-size:14px;text-align:center;line-height:1.6;max-width:80%}
+.flip-nav{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+.flip-btn{padding:10px 20px;border:1.5px solid #d8cec0;border-radius:12px;background:#fff;color:#6a5a4a;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.flip-btn:disabled{opacity:.4;cursor:not-allowed}
+.flip-info{font-size:13px;color:#9a8a7a}
+.plan-input-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.plan-input{flex:1;min-width:120px;padding:14px 16px;border:1.5px solid #d8cec0;border-radius:14px;font-size:15px;outline:none;font-family:inherit;background:#fff;color:#3a3226}
+.plan-date{padding:14px 8px;border:1.5px solid #d8cec0;border-radius:14px;font-size:13px;outline:none;font-family:inherit;background:#fff;color:#3a3226;width:120px}
+.plan-add-btn{padding:14px 18px;background:#7a9e7e;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.plan-list{display:flex;flex-direction:column;gap:10px}
+.plan-item{display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:14px 16px;border:1px solid #e8e0d5}
+.plan-item.done{opacity:.5}
+.plan-item.done .plan-text{text-decoration:line-through}
+.plan-check{width:24px;height:24px;border-radius:50%;border:2px solid #d8cec0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px;color:transparent;background:none;font-family:inherit}
+.plan-check.checked{background:#7a9e7e;border-color:#7a9e7e;color:#fff}
+.plan-text{flex:1;font-size:15px;color:#3a3226;line-height:1.4;text-align:left}
+.plan-date-tag{font-size:11px;color:#b0a090;background:#f0ece4;padding:3px 8px;border-radius:8px;white-space:nowrap}
+.plan-del{background:none;border:none;color:#c0b0a0;font-size:18px;cursor:pointer;padding:4px;font-family:inherit}
+.plan-section-label{font-size:13px;color:#9a8a7a;font-weight:600;margin:16px 0 8px}
+.profile-avatar{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#a8c8a8,#7a9e7e);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;margin:10px auto 14px;cursor:pointer;overflow:hidden;border:3px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.1);position:relative}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-avatar .edit-hint{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.4);color:#fff;font-size:11px;text-align:center;padding:4px}
+.profile-name-input{display:block;width:80%;margin:0 auto 14px;padding:10px 16px;border:1.5px solid #d8cec0;border-radius:12px;font-size:16px;text-align:center;outline:none;font-family:inherit;background:#fff;color:#3a3226}
+.profile-section{background:#fff;border-radius:16px;padding:16px;border:1px solid #e8e0d5;margin-bottom:14px}
+.profile-section .sec-title{font-size:13px;color:#9a8a7a;font-weight:600;margin-bottom:10px}
+.profile-stat{display:flex;justify-content:space-around;text-align:center}
+.profile-stat .num{font-size:22px;font-weight:700;color:#7a9e7e}
+.profile-stat .lbl{font-size:12px;color:#b0a090;margin-top:2px}
+.export-btn{display:block;width:100%;padding:16px;border:none;border-radius:16px;background:#7a9e7e;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:#fff;border-top:1px solid #e8e0d5;display:flex;z-index:100;padding:6px 0 max(6px,env(safe-area-inset-bottom))}
+.nav-item{flex:1;text-align:center;padding:6px 0;cursor:pointer;color:#b0a090;font-size:11px;background:none;border:none;font-family:inherit}
+.nav-item .nav-icon{font-size:22px;display:block;margin-bottom:2px}
+.nav-item.active{color:#7a9e7e}
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(58,50,38,.9);color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;max-width:80%;line-height:1.5}
+.toast.show{opacity:1}
+.hidden{display:none!important}
 </style>
 </head>
 <body>
 <div class="phone">
 
-  <!-- ========== 主页 ========== -->
-  <div class="page active" id="page-home">
-    <div class="home-header">
-      <div class="date" id="homeDate"></div>
-      <div class="greeting" id="homeGreeting">你好呀</div>
-      <div class="sub">记录每一天的小美好</div>
-    </div>
-
-    <button class="big-btn" id="btnRecord">✏️ 记录今日</button>
-
-    <div class="small-row">
-      <button class="small-btn" id="btnYesterday"><span class="icon">📖</span>查看昨日</button>
-      <button class="small-btn" id="btnPlan"><span class="icon">📋</span>未来计划</button>
-    </div>
-
-    <div class="recent-card" id="recentCard">
-      <div class="label">最近记录</div>
-      <div class="preview" id="recentPreview">还没有记录哦～</div>
-    </div>
-  </div>
-
-  <!-- ========== 记录今日 ========== -->
-  <div class="page" id="page-editor">
-    <div class="editor-header">
-      <button class="back-btn" id="editorBack">←</button>
-      <div class="title" id="editorTitle">记录今日</div>
-      <button class="save-btn" id="editorSave">保存</button>
-    </div>
-
-    <div class="paper">
-      <div class="paper-inner">
-        <textarea class="paper-textarea" id="editorText" placeholder="今天发生了什么？写下你的心情吧..."></textarea>
-        <div class="paper-images" id="editorImages"></div>
-      </div>
-    </div>
-
-    <!-- 今日待办（从未来计划自动导入） -->
-    <div id="todayTasks" class="hidden" style="margin-bottom:10px;">
-      <div style="font-size:13px;color:#9a8a7a;font-weight:600;letter-spacing:1px;margin-bottom:8px;">📌 今日待办</div>
-      <div id="todayTaskList" style="display:flex;flex-direction:column;gap:8px;"></div>
-    </div>
-
-    <div class="canvas-wrap">
-      <canvas class="draw-canvas" id="drawCanvas"></canvas>
-    </div>
-
-    <div class="toolbar">
-      <button class="tool-btn active" data-tool="pen">✏️ 画笔</button>
-      <button class="tool-btn" data-tool="eraser">🧹 橡皮</button>
-      <button class="tool-btn" id="btnClearCanvas">🗑️ 清空</button>
-      <button class="tool-btn" id="btnImportImg">🖼️ 图片</button>
-    </div>
-
-    <div class="color-row">
-      <div class="color-dot active" style="background:#3a3226;" data-color="#3a3226"></div>
-      <div class="color-dot" style="background:#d87a7a;" data-color="#d87a7a"></div>
-      <div class="color-dot" style="background:#7a9e7e;" data-color="#7a9e7e"></div>
-      <div class="color-dot" style="background:#7a8ed8;" data-color="#7a8ed8"></div>
-      <div class="color-dot" style="background:#d8b87a;" data-color="#d8b87a"></div>
-      <div class="color-dot" style="background:#9a7ad8;" data-color="#9a7ad8"></div>
-      <input type="range" class="size-slider" id="sizeSlider" min="1" max="12" value="3">
-    </div>
-
-    <input type="file" id="fileInput" accept="image/*" style="display:none;">
-  </div>
-
-  <!-- ========== 查看昨日 ========== -->
-  <div class="page" id="page-yesterday">
-    <div class="editor-header">
-      <button class="back-btn" id="yesterdayBack">←</button>
-      <div class="title">查看昨日</div>
-      <div style="width:60px;"></div>
-    </div>
-
-    <div class="yesterday-paper" id="yesterdayPaper">
-      <div class="content" id="yesterdayContent"></div>
-      <div class="lock-overlay" id="lockOverlay">
-        <div class="lock-msg">昨天已经过去了，请多多关注今天吧 🌱</div>
-      </div>
-    </div>
-
-    <div class="flip-nav">
-      <button class="flip-btn" id="flipPrev" disabled>← 前一天</button>
-      <span class="flip-info" id="flipInfo">1 / 1</span>
-      <button class="flip-btn" id="flipNext" disabled>后一天 →</button>
-    </div>
-  </div>
-
-  <!-- ========== 未来计划 ========== -->
-  <div class="page" id="page-plan">
-    <div class="editor-header">
-      <button class="back-btn" id="planBack">←</button>
-      <div class="title">未来计划</div>
-      <div style="width:60px;"></div>
-    </div>
-
-    <div class="plan-input-row">
-      <input type="text" class="plan-input" id="planInput" placeholder="添加一个计划...">
-      <input type="date" class="plan-date" id="planDate">
-      <button class="plan-add-btn" id="planAdd">+</button>
-    </div>
-
-    <div class="plan-section-label">📋 待完成</div>
-    <div class="plan-list" id="planListActive"></div>
-
-    <div class="plan-section-label">✅ 已完成</div>
-    <div class="plan-list" id="planListDone"></div>
-  </div>
-
-  <!-- ========== 我的 ========== -->
-  <div class="page" id="page-profile">
-    <div class="page-title"><span class="icon">👤</span>我的</div>
-
-    <div class="profile-avatar" id="avatarPreview">
-      <span id="avatarEmoji">🌸</span>
-      <div class="edit-hint">点击更换</div>
-    </div>
-    <input type="file" id="avatarFile" accept="image/*" style="display:none;">
-
-    <input type="text" class="profile-name-input" id="nameInput" placeholder="给自己起个昵称吧" maxlength="12">
-
-    <div class="profile-section">
-      <div class="sec-title">📊 我的记录</div>
-      <div class="profile-stat">
-        <div class="stat-item">
-          <div class="num" id="statDays">0</div>
-          <div class="lbl">记录天数</div>
-        </div>
-        <div class="stat-item">
-          <div class="num" id="statPlans">0</div>
-          <div class="lbl">计划完成</div>
-        </div>
-        <div class="stat-item">
-          <div class="num" id="statWords">0</div>
-          <div class="lbl">总字数</div>
-        </div>
-      </div>
-    </div>
-
-    <button class="export-btn" id="btnExportToday">📤 导出今日日记图片</button>
-    <button class="export-btn" id="btnExportYesterday">📤 导出昨日日记图片</button>
-
-    <div style="font-size:12px;color:#c0b0a0;text-align:center;margin-top:20px;">
-      日记本 · 生活记录 v1.0
-    </div>
-  </div>
-
-  <!-- ========== 底部导航 ========== -->
-  <div class="bottom-nav">
-    <button class="nav-item active" data-page="home">
-      <span class="nav-icon">🏠</span>主页
-    </button>
-    <button class="nav-item" data-page="profile">
-      <span class="nav-icon">👤</span>我的
-    </button>
-  </div>
-
+<div class="page active" id="page-home">
+<div class="home-header">
+<div class="date" id="homeDate"></div>
+<div class="greeting" id="homeGreeting">你好呀</div>
+<div class="sub">记录每一天的小美好</div>
+</div>
+<button class="big-btn" id="btnRecord">✏️ 记录今日</button>
+<div class="small-row">
+<button class="small-btn" id="btnYesterday"><span class="icon">📖</span>查看昨日</button>
+<button class="small-btn" id="btnPlan"><span class="icon">📋</span>未来计划</button>
+</div>
+<div class="recent-card">
+<div class="label">最近记录</div>
+<div class="preview" id="recentPreview">还没有记录哦～</div>
+</div>
 </div>
 
+<div class="page" id="page-editor">
+<div class="editor-header">
+<button class="back-btn" id="editorBack">←</button>
+<div class="title" id="editorTitle">记录今日</div>
+<button class="save-btn" id="editorSave">保存</button>
+</div>
+<div class="paper">
+<div class="paper-inner">
+<textarea class="paper-textarea" id="editorText" placeholder="今天发生了什么？写下你的心情吧..."></textarea>
+<div class="paper-images" id="editorImages"></div>
+</div>
+</div>
+<div id="todayTasks" class="hidden" style="margin-bottom:10px;">
+<div style="font-size:13px;color:#9a8a7a;font-weight:600;margin-bottom:8px;">📌 今日待办</div>
+<div id="todayTaskList" style="display:flex;flex-direction:column;gap:8px;"></div>
+</div>
+<div class="canvas-wrap">
+<canvas class="draw-canvas" id="drawCanvas"></canvas>
+</div>
+<div class="toolbar">
+<button class="tool-btn active" data-tool="pen">✏️ 画笔</button>
+<button class="tool-btn" data-tool="eraser">🧹 橡皮</button>
+<button class="tool-btn" id="btnClearCanvas">🗑️ 清空</button>
+<button class="tool-btn" id="btnImportImg">🖼️ 图片</button>
+</div>
+<div class="color-row">
+<div class="color-dot active" style="background:#3a3226;" data-color="#3a3226"></div>
+<div class="color-dot" style="background:#d87a7a;" data-color="#d87a7a"></div>
+<div class="color-dot" style="background:#7a9e7e;" data-color="#7a9e7e"></div>
+<div class="color-dot" style="background:#7a8ed8;" data-color="#7a8ed8"></div>
+<div class="color-dot" style="background:#d8b87a;" data-color="#d8b87a"></div>
+<input type="range" class="size-slider" id="sizeSlider" min="1" max="12" value="3">
+</div>
+<input type="file" id="fileInput" accept="image/*" style="display:none;">
+</div>
+
+<div class="page" id="page-yesterday">
+<div class="editor-header">
+<button class="back-btn" id="yesterdayBack">←</button>
+<div class="title">查看昨日</div>
+<div style="width:60px;"></div>
+</div>
+<div class="yesterday-paper" id="yesterdayPaper">
+<div class="content" id="yesterdayContent"></div>
+<div class="lock-overlay" id="lockOverlay">
+<div class="lock-msg">昨天已经过去了，请多多关注今天吧 🌱</div>
+</div>
+</div>
+<div class="flip-nav">
+<button class="flip-btn" id="flipPrev" disabled>← 前一天</button>
+<span class="flip-info" id="flipInfo">1 / 1</span>
+<button class="flip-btn" id="flipNext" disabled>后一天 →</button>
+</div>
+</div>
+
+<div class="page" id="page-plan">
+<div class="editor-header">
+<button class="back-btn" id="planBack">←</button>
+<div class="title">未来计划</div>
+<div style="width:60px;"></div>
+</div>
+<div class="plan-input-row">
+<input type="text" class="plan-input" id="planInput" placeholder="添加一个计划...">
+<input type="date" class="plan-date" id="planDate">
+<button class="plan-add-btn" id="planAdd">+</button>
+</div>
+<div class="plan-section-label">📋 待完成</div>
+<div class="plan-list" id="planListActive"></div>
+<div class="plan-section-label">✅ 已完成</div>
+<div class="plan-list" id="planListDone"></div>
+</div>
+
+<div class="page" id="page-profile">
+<div class="page-title">👤 我的</div>
+<div class="profile-avatar" id="avatarPreview">
+<span id="avatarEmoji">🌸</span>
+<div class="edit-hint">点击更换</div>
+</div>
+<input type="file" id="avatarFile" accept="image/*" style="display:none;">
+<input type="text" class="profile-name-input" id="nameInput" placeholder="给自己起个昵称吧" maxlength="12">
+<div class="profile-section">
+<div class="sec-title">📊 我的记录</div>
+<div class="profile-stat">
+<div><div class="num" id="statDays">0</div><div class="lbl">记录天数</div></div>
+<div><div class="num" id="statPlans">0</div><div class="lbl">计划完成</div></div>
+<div><div class="num" id="statWords">0</div><div class="lbl">总字数</div></div>
+</div>
+</div>
+<button class="export-btn" id="btnExportToday">📤 导出今日日记</button>
+<button class="export-btn" id="btnExportYesterday">📤 导出昨日日记</button>
+<div style="font-size:12px;color:#c0b0a0;text-align:center;margin-top:20px;">日记本 v1.0</div>
+</div>
+
+<div class="bottom-nav">
+<button class="nav-item active" data-page="home"><span class="nav-icon">🏠</span>主页</button>
+<button class="nav-item" data-page="profile"><span class="nav-icon">👤</span>我的</button>
+</div>
+
+</div>
 <div class="toast" id="toast"></div>
 
-<!-- 导出预览 -->
-<div class="export-preview" id="exportPreview">
-  <img id="exportImg" src="" alt="导出预览">
-  <button class="close-btn" id="exportClose">关闭</button>
-</div>
-
 <script>
-// ==================== 数据存储 ====================
-var STORE_KEY = 'diary_app_data';
+var STORE_KEY='diary_app_data';
+function loadData(){try{var raw=localStorage.getItem(STORE_KEY);if(raw)return JSON.parse(raw)}catch(e){}return{diaries:{},plans:[],profile:{name:'',avatar:''}}}
+function saveData(){try{localStorage.setItem(STORE_KEY,JSON.stringify(data))}catch(e){toast('存储空间不足')}}
+var data=loadData();
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function dateCN(str){if(!str)return'';var p=str.split('-');return parseInt(p[1])+'月'+parseInt(p[2])+'日'}
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(function(){t.classList.remove('show')},2000)}
+var pages={home:document.getElementById('page-home'),editor:document.getElementById('page-editor'),yesterday:document.getElementById('page-yesterday'),plan:document.getElementById('page-plan'),profile:document.getElementById('page-profile')};
+function goPage(name){Object.keys(pages).forEach(function(k){pages[k].classList.toggle('active',k===name)});document.querySelectorAll('.nav-item').forEach(function(n){n.classList.toggle('active',n.dataset.page===name)});if(pages[name])pages[name].scrollTop=0}
+document.querySelectorAll('.nav-item').forEach(function(n){n.addEventListener('click',function(){goPage(this.dataset.page);if(this.dataset.page==='home')refreshHome();if(this.dataset.page==='profile')refreshProfile()})});
 
-function loadData() {
-  try {
-    var raw = localStorage.getItem(STORE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return {
-    diaries: {},       // { '2026-09-29': { text: '', images: [], drawing: '' } }
-    plans: [],         // [{ id, text, date, done }]
-    profile: { name: '', avatar: '' },
-    nicknameTaken: {}  // 模拟已占用昵称
-  };
-}
+function refreshHome(){var now=new Date();var w=['日','一','二','三','四','五','六'];document.getElementById('homeDate').textContent=now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日 星期'+w[now.getDay()];var h=now.getHours();var greet='你好呀';if(h<6)greet='夜深了';else if(h<9)greet='早上好';else if(h<12)greet='上午好';else if(h<14)greet='中午好';else if(h<18)greet='下午好';else greet='晚上好';var name=data.profile.name||'';document.getElementById('homeGreeting').textContent=name?greet+'，'+name:greet;var dates=Object.keys(data.diaries).sort().reverse();var preview=document.getElementById('recentPreview');if(dates.length===0){preview.textContent='还没有记录哦～';preview.className='preview';preview.style.color='#c0b0a0'}else{var latest=dates[0];var d=data.diaries[latest];var text=d.text||'';if(text.length>60)text=text.slice(0,60)+'...';preview.textContent=dateCN(latest)+'：'+(text||'（图片记录）');preview.className='preview';preview.style.color='#6a5a4a'}}
 
-function saveData() {
-  try {
-    localStorage.setItem(STORE_KEY, JSON.stringify(data));
-  } catch(e) {
-    toast('存储空间不足，请清理一些旧记录');
-  }
-}
+document.getElementById('btnRecord').addEventListener('click',function(){openEditor(todayStr())});
+document.getElementById('btnYesterday').addEventListener('click',function(){goPage('yesterday');renderYesterday()});
+document.getElementById('btnPlan').addEventListener('click',function(){goPage('plan');renderPlan()});
+document.querySelectorAll('.back-btn').forEach(function(b){b.addEventListener('click',function(){goPage('home');refreshHome()})});
 
-var data = loadData();
+function openEditor(dateStr){goPage('editor');document.getElementById('editorTitle').textContent=dateStr===todayStr()?'记录今日':dateCN(dateStr);document.getElementById('editorText').value=(data.diaries[dateStr]&&data.diaries[dateStr].text)||'';renderEditorImages(dateStr);renderTodayTasks(dateStr);clearCanvas();document.getElementById('editorSave').onclick=function(){if(!data.diaries[dateStr])data.diaries[dateStr]={text:'',images:[]};data.diaries[dateStr].text=document.getElementById('editorText').value;saveData();toast('已保存');goPage('home');refreshHome()}}
+function renderEditorImages(dateStr){var d=data.diaries[dateStr];var wrap=document.getElementById('editorImages');wrap.innerHTML='';if(!d||!d.images)return;d.images.forEach(function(src){var img=document.createElement('img');img.src=src;wrap.appendChild(img)})}
+function renderTodayTasks(dateStr){var tasks=data.plans.filter(function(p){return p.date===dateStr&&!p.done});var box=document.getElementById('todayTasks');var list=document.getElementById('todayTaskList');if(tasks.length===0){box.classList.add('hidden');return}box.classList.remove('hidden');list.innerHTML='';tasks.forEach(function(t){var div=document.createElement('div');div.style.cssText='display:flex;align-items:center;gap:10px;background:#fff;padding:10px 14px;border-radius:12px;border:1px solid #e8e0d5;font-size:14px';var cb=document.createElement('input');cb.type='checkbox';cb.onchange=function(){t.done=true;saveData();renderTodayTasks(dateStr)};var span=document.createElement('span');span.textContent=t.text;span.style.flex='1';div.appendChild(cb);div.appendChild(span);list.appendChild(div)})}
 
-// ==================== 工具函数 ====================
-function todayStr() {
-  var d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
+var canvas=document.getElementById('drawCanvas');var ctx=canvas.getContext('2d');var drawing=false;var currentColor='#3a3226';var currentSize=3;var currentTool='pen';
+function resizeCanvas(){var rect=canvas.getBoundingClientRect();canvas.width=rect.width;canvas.height=rect.height;ctx.lineCap='round';ctx.lineJoin='round'}
+window.addEventListener('resize',resizeCanvas);setTimeout(resizeCanvas,100);
+function getPos(e){var rect=canvas.getBoundingClientRect();var t=e.touches?e.touches[0]:e;return{x:t.clientX-rect.left,y:t.clientY-rect.top}}
+canvas.addEventListener('touchstart',startDraw);canvas.addEventListener('mousedown',startDraw);
+canvas.addEventListener('touchmove',moveDraw);canvas.addEventListener('mousemove',moveDraw);
+canvas.addEventListener('touchend',endDraw);canvas.addEventListener('mouseup',endDraw);
+canvas.addEventListener('touchcancel',endDraw);canvas.addEventListener('mouseleave',endDraw);
+function startDraw(e){e.preventDefault();drawing=true;var p=getPos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.strokeStyle=currentTool==='eraser'?'#fffdf8':currentColor;ctx.lineWidth=currentTool==='eraser'?currentSize*3:currentSize;ctx.lineTo(p.x,p.y);ctx.stroke()}
+function moveDraw(e){if(!drawing)return;e.preventDefault();var p=getPos(e);ctx.lineTo(p.x,p.y);ctx.strokeStyle=currentTool==='eraser'?'#fffdf8':currentColor;ctx.lineWidth=currentTool==='eraser'?currentSize*3:currentSize;ctx.stroke()}
+function endDraw(){drawing=false}
+function clearCanvas(){ctx.clearRect(0,0,canvas.width,canvas.height)}
+document.getElementById('btnClearCanvas').addEventListener('click',clearCanvas);
+document.querySelectorAll('.tool-btn[data-tool]').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.tool-btn[data-tool]').forEach(function(x){x.classList.remove('active')});this.classList.add('active');currentTool=this.dataset.tool})});
+document.querySelectorAll('.color-dot').forEach(function(d){d.addEventListener('click',function(){document.querySelectorAll('.color-dot').forEach(function(x){x.classList.remove('active')});this.classList.add('active');currentColor=this.dataset.color})});
+document.getElementById('sizeSlider').addEventListener('input',function(){currentSize=parseInt(this.value)});
+document.getElementById('btnImportImg').addEventListener('click',function(){document.getElementById('fileInput').click()});
+document.getElementById('fileInput').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){var dateStr=document.getElementById('editorTitle').textContent==='记录今日'?todayStr():null;if(!dateStr)return;if(!data.diaries[dateStr])data.diaries[dateStr]={text:'',images:[]};if(!data.diaries[dateStr].images)data.diaries[dateStr].images=[];data.diaries[dateStr].images.push(ev.target.result);saveData();renderEditorImages(dateStr)};reader.readAsDataURL(file)});
 
-function dateStr(d) {
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
+var yesterdayDates=[];var yesterdayIndex=0;
+function renderYesterday(){var all=Object.keys(data.diaries).sort();var today=todayStr();var past=all.filter(function(d){return d<today});yesterdayDates=past;if(past.length===0){document.getElementById('yesterdayContent').innerHTML='<div class="yesterday-empty">还没有记录哦～</div>';document.getElementById('flipInfo').textContent='0 / 0';document.getElementById('flipPrev').disabled=true;document.getElementById('flipNext').disabled=true;return}yesterdayIndex=past.length-1;showYesterday()}
+function showYesterday(){var date=yesterdayDates[yesterdayIndex];var d=data.diaries[date];var html='<div style="font-size:12px;color:#9a8a7a;margin-bottom:10px;">'+dateCN(date)+'</div>';if(d.text)html+=d.text.replace(/\n/g,'<br>');if(d.images&&d.images.length){d.images.forEach(function(src){html+='<img src="'+src+'">'})}document.getElementById('yesterdayContent').innerHTML=html;document.getElementById('flipInfo').textContent=(yesterdayIndex+1)+' / '+yesterdayDates.length;document.getElementById('flipPrev').disabled=yesterdayIndex===0;document.getElementById('flipNext').disabled=yesterdayIndex===yesterdayDates.length-1}
+document.getElementById('flipPrev').addEventListener('click',function(){if(yesterdayIndex>0){yesterdayIndex--;showYesterday()}});
+document.getElementById('flipNext').addEventListener('click',function(){if(yesterdayIndex<yesterdayDates.length-1){yesterdayIndex++;showYesterday()}});
+document.getElementById('lockOverlay').addEventListener('click',function(){toast('昨天已经过去了，请多多关注今天吧 🌱')});
 
-function dateCN(str) {
-  if (!str) return '';
-  var parts = str.split('-');
-  return parseInt(parts[1]) + '月' + parseInt(parts[2]) + '日';
-}
+function renderPlan(){var active=data.plans.filter(function(p){return !p.done});var done=data.plans.filter(function(p){return p.done});var a=document.getElementById('planListActive');var d=document.getElementById('planListDone');a.innerHTML='';d.innerHTML='';if(active.length===0)a.innerHTML='<div style="font-size:13px;color:#c0b0a0;text-align:center;padding:20px;">暂无待完成计划</div>';active.forEach(function(p){a.appendChild(makePlanItem(p))});if(done.length===0)d.innerHTML='<div style="font-size:13px;color:#c0b0a0;text-align:center;padding:20px;">暂无已完成计划</div>';done.forEach(function(p){d.appendChild(makePlanItem(p))})}
+function makePlanItem(p){var div=document.createElement('div');div.className='plan-item'+(p.done?' done':'');var cb=document.createElement('button');cb.className='plan-check'+(p.done?' checked':'');cb.textContent='✓';cb.onclick=function(){p.done=!p.done;saveData();renderPlan()};var span=document.createElement('span');span.className='plan-text';span.textContent=p.text;var tag=document.createElement('span');tag.className='plan-date-tag';tag.textContent=p.date?dateCN(p.date):'';var del=document.createElement('button');del.className='plan-del';del.textContent='×';del.onclick=function(){data.plans=data.plans.filter(function(x){return x.id!==p.id});saveData();renderPlan()};div.appendChild(cb);div.appendChild(span);div.appendChild(tag);div.appendChild(del);return div}
+document.getElementById('planAdd').addEventListener('click',function(){var text=document.getElementById('planInput').value.trim();var date=document.getElementById('planDate').value;if(!text){toast('请输入计划内容');return}if(!date){toast('请选择日期');return}data.plans.push({id:Date.now(),text:text,date:date,done:false});saveData();document.getElementById('planInput').value='';renderPlan();toast('已添加计划')});
 
-function showToast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(function() { t.classList.remove('show'); }, 2000);
-}
+function refreshProfile(){var name=data.profile.name||'';document.getElementById('nameInput').value=name;var avatar=data.profile.avatar;var emoji=document.getElementById('avatarEmoji');var preview=document.getElementById('avatarPreview');if(avatar){preview.innerHTML='<img src="'+avatar+'"><div class="edit-hint">点击更换</div>'}else{preview.innerHTML='<span id="avatarEmoji">🌸</span><div class="edit-hint">点击更换</div>'}var days=Object.keys(data.diaries).length;var plansDone=data.plans.filter(function(p){return p.done}).length;var words=0;Object.keys(data.diaries).forEach(function(k){words+=(data.diaries[k].text||'').length});document.getElementById('statDays').textContent=days;document.getElementById('statPlans').textContent=plansDone;document.getElementById('statWords').textContent=words}
+document.getElementById('nameInput').addEventListener('input',function(){data.profile.name=this.value.trim();saveData()});
+document.getElementById('avatarPreview').addEventListener('click',function(){document.getElementById('avatarFile').click()});
+document.getElementById('avatarFile').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){data.profile.avatar=ev.target.result;saveData();refreshProfile()};reader.readAsDataURL(file)});
+document.getElementById('btnExportToday').addEventListener('click',function(){exportDiary(todayStr())});
+document.getElementById('btnExportYesterday').addEventListener('click',function(){var all=Object.keys(data.diaries).sort();var past=all.filter(function(d){return d<todayStr()});if(past.length===0){toast('还没有昨日记录');return}exportDiary(past[past.length-1])});
 
-function toast(msg) { showToast(msg); }
+function exportDiary(dateStr){var d=data.diaries[dateStr];if(!d||(!d.text&&(!d.images||d.images.length===0))){toast('这一天还没有记录');return}var c=document.createElement('canvas');var W=600;c.width=W;c.height=900;var cx=c.getContext('2d');cx.fillStyle='#fffdf8';cx.fillRect(0,0,W,900);for(var y=0;y<900;y+=28){cx.strokeStyle='#f0e8dc';cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke()}cx.fillStyle='#3a3226';cx.font='16px sans-serif';var lines=[];var text=d.text||'';var words=text.split('');var line='';for(var i=0;i<words.length;i++){var test=line+words[i];if(cx.measureText(test).width>W-80){lines.push(line);line=words[i]}else{line=test}}lines.push(line);lines.forEach(function(l,idx){cx.fillText(l,40,60+idx*28)});var imgY=60+lines.length*28+20;if(d.images&&d.images.length){d.images.forEach(function(src,idx){var img=new Image();img.onload=function(){var scale=Math.min(200/img.width,200/img.height);var w=img.width*scale,h=img.height*scale;cx.drawImage(img,40,imgY+idx*(h+10),w,h);if(idx===d.images.length-1){addWatermark(cx,W,900);finishExport(c)}};img.src=src})}else{addWatermark(cx,W,900);finishExport(c)}}
+function addWatermark(cx,W,H){var name=data.profile.name||'';var avatar=data.profile.avatar;cx.globalAlpha=0.5;if(avatar){var img=new Image();img.onload=function(){var size=60;cx.drawImage(img,W/2-size/2,H/2-size/2,size,size);if(name){cx.fillStyle='#3a3226';cx.font='bold 16px sans-serif';cx.textAlign='center';cx.fillText(name,W/2,H/2+40)}};img.src=avatar}else if(name){cx.fillStyle='#3a3226';cx.font='bold 20px sans-serif';cx.textAlign='center';cx.fillText(name,W/2,H/2)}cx.globalAlpha=1}
+function finishExport(canvas){var url=canvas.toDataURL('image/png');var a=document.createElement('a');a.href=url;a.download='diary_'+Date.now()+'.png';a.click();toast('图片已生成，请在下载中查看')}
 
-// ==================== 页面切换 ====================
-var pages = {
-  home: document.getElementById('page-home'),
-  editor: document.getElementById('page-editor'),
-  yesterday: document.getElementById('page-yesterday'),
-  plan: document.getElementById('page-plan'),
-  profile: document.getElementById('page-profile')
-};
-
-function goPage(name) {
-  Object.keys(pages).forEach(function(k) {
-    pages[k].classList.toggle('active', k === name);
-  });
-  // 底部导航高亮
-  document.querySelectorAll('.nav-item').forEach(function(n) {
-    n.classList.toggle('active', n.dataset.page === name);
-  });
-  // 滚动到顶部
-  if (pages[name]) pages[name].scrollTop = 0;
-}
-
-// 底部导航
-document.querySelectorAll('.nav-item').forEach(function(n) {
-  n.addEventListener('click', function() {
-    goPage(this.dataset.page);
-    if (this.dataset.page === 'home') refreshHome();
-    if (this.dataset.page === 'profile') refreshProfile();
-  });
-});
-
-// ==================== 主页 ====================
-function refreshHome() {
-  var now = new Date();
-  var weekdays = ['日','一','二','三','四','五','六'];
-  document.getElementById('homeDate').textContent = 
-    now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日 星期' + weekdays[now.getDay()];
-  
-  var h = now.getHours();
-  var greet = '你好呀';
-  if (h < 6) greet = '夜深了';
-  else if (h < 9) greet = '早上好';
-  else if (h < 12) greet = '上午好';
-  else if (h < 14) greet = '中午好';
-  else if (h < 18) greet = '下午好';
-  else greet = '晚上好';
-  
-  var name = data.profile.name || '';
-  document.getElementById('homeGreeting').textContent = name ? greet + '，' + name : greet;
-
-  // 最近记录
-  var dates = Object.keys(data.diaries).sort().reverse();
-  var preview = document.getElementById('recentPreview');
-  if (dates.length === 0) {
-    preview.textContent = '还没有记录哦～';
-    preview.className = 'empty';
-  } else {
-    var latest = dates[0];
-    var d = data.diaries[latest];
-    var text = d.text || '';
-    if (text.length > 60) text = text.slice(0, 60) + '...';
-    preview.textContent = dateCN(latest) + '：' + (text || '（图片记录）');
-    preview.className = 'preview';
-  }
-}
-
-document.getElementById('btnRecord').addEventListener('click', function() {
-  openEditor(todayStr());
-});
-
-document.getElementById('btnYesterday').addEventListener('click', function() {
-  goPage('yesterday');
-  renderYesterday();
-});
-
-document.getElementById
+refreshHome();
+</script>
+</body>
+</html>
